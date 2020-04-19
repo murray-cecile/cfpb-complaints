@@ -1,0 +1,98 @@
+---
+title: "Exploratory data analysis"
+author: "Cecile Murray"
+date: "4/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Documents/CAPP/CAPP-30255/cfpb-complaints/explore")
+
+libs <- c("here",
+          "tidyverse",
+          "magrittr",
+          "purrr",
+          "knitr", 
+          "kableExtra",
+          "janitor")
+lapply(libs, library, character.only = TRUE)
+
+set_here()
+```
+
+```{r loading, results='hide'}
+# load in data
+raw <- read_csv("../data/complaints.csv")
+
+# filter to only complaints with text 
+complaints <- raw %>% 
+  clean_names() %>% 
+  filter(!is.na(consumer_complaint_narrative),
+         consumer_complaint_narrative != "")
+```
+
+```{r xtabs}
+
+# some crosstabs - looking good on missing values, generally
+complaints %>% 
+  tabyl(consumer_consent_provided) %>%
+  mutate(percent = scales::number(percent, accuracy = 0.01))
+complaints %>%
+  tabyl(company_response_to_consumer) %>%
+  mutate(percent = scales::number(percent, accuracy = 0.01))
+complaints %>% 
+  tabyl(company_public_response) %>%
+  mutate(percent = scales::number(percent, accuracy = 0.01)) 
+
+complaints %>% tabyl(company_public_response,
+                     company_response_to_consumer)
+```
+
+Florida appears to be disproportionately represented
+
+```{r st_xtab}
+# how many states does this affect?
+complaints %>% 
+  tabyl(state) %>% 
+  mutate(percent = scales::number(percent, accuracy = 0.01))
+```
+
+4,500 unique companies (without efforts to check for dups). And about 1/3 of complaints are about credit reporting.
+
+```{r companies}
+# number of unique companies: 4500
+length(unique(complaints$company))
+
+# mostly people are complaining about credit bureaus (30% of complaints)
+complaints %>% 
+  tabyl(company) %>% 
+  mutate(percent = scales::number(percent, accuracy = 0.01)) %>% 
+  arrange(-n) 
+
+# specifically credit reporting is the issue
+complaints %>%
+  tabyl(sub_product) %>% 
+  mutate(percent = scales::number(percent, accuracy = 0.01)) %>% 
+  arrange(-n)
+```
+
+Timeline of data: # of complaints has actually tanked... reporting issue?
+According to the website, "[c]omplaints are published after the company responds, confirming a commercial relationship with the consumer, or after 15 days, whichever comes first."
+
+```{r complaint_time_chart}
+complaints %>% 
+  ggplot(aes(x = date_received)) +
+  geom_freqpoly()
+```
+
+Note also what we don't see in this database: "[c]omplaints referred to other regulators, such as complaints about depository institutions with less than $10 billion in assets, are not published in the Consumer Complaint Database."
+
+^I think this means every company in here should be in FDIC databases, based on size?
+
+```{r complaint_trends}
+complaints %>% 
+  ggplot(aes(x = date_received,
+             fill = product)) +
+  geom_area(stat = "density") +
+  theme(legend.position = "bottom")
+```
