@@ -33,7 +33,7 @@ def load_data():
     return df
 
 # TO DO: LOAD INTO TORCH FORMAT
-
+# Nora extracting text features in "Data Preprocessing - Text Extraction.ipnyb"
 def tokenize():
     '''
     '''    

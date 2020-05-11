@@ -9,7 +9,7 @@ Runs the full classification loop.
 
 Required input: path to training and testing data
 Output: The script will print a summary of all evaluated models as well as the
-        highest AUC acheived.
+        highest AUC achieved.
 '''
 
 
