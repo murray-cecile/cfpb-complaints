@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 SEED = 1234
 torch.manual_seed(SEED)
 TINY_TRAIN_FILE = "data/complaints_1k.csv"
+TINY_TEST_FILE = "data/complaints_500.csv"
 
 BATCH_SIZE = 64
 MAX_VOCAB_SIZE = 25000
@@ -135,7 +136,7 @@ class WordEmbAvg(nn.Module):
         z2 = self.linear2(z1)
         y_tilde = self.relu(z2)
 
-        return F.log_softmax(y_tilde, dim=1) # TO DO: IS A SOFTMAX NECESSARY HERE?
+        return y_tilde
 
 
 # also from HW2 problem 3
@@ -225,6 +226,7 @@ if __name__ == "__main__":
 
     data_obj = load_and_tokenize_data(TINY_TRAIN_FILE)
     train_data, valid_data = data_obj.split(random_state=random.seed(SEED))
+    test_data = load_and_tokenize_data(TINY_TEST_FILE)
 
     # create embeddings
     TEXT.build_vocab(train_data, max_size=MAX_VOCAB_SIZE)
@@ -233,8 +235,8 @@ if __name__ == "__main__":
     print(f"Unique tokens in TEXT vocabulary: {len(TEXT.vocab)}")
     print(f"Unique tokens in LABEL vocabulary: {len(LABEL.vocab)}")
 
-    train_iterator, valid_iterator = data.BucketIterator.splits(
-        (train_data, valid_data),
+    train_iterator, valid_iterator, test_iterator = data.BucketIterator.splits(
+        (train_data, valid_data, test_data),
         sort_key = lambda x: len(x.narrative),
         sort_within_batch=False,
         batch_size = BATCH_SIZE)
@@ -253,9 +255,9 @@ if __name__ == "__main__":
     tm = Training_module(model)
     best_model = tm.train_model(train_iterator, valid_iterator)
 
-    # tm.model = best_model
-    # test_loss, test_acc = tm.evaluate(test_iterator)
-    # print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc*100:.2f}%')
+    tm.model = best_model
+    test_loss, test_acc = tm.evaluate(test_iterator)
+    print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc*100:.2f}%')
 
 '''
 RESOURCES:
