@@ -18,29 +18,6 @@ BATCH_SIZE = 64
 MAX_VOCAB_SIZE = 25000
 
 
-def load_and_split_data():
-    '''
-    DO NOT USE
-    Manual approach to loading csv, split into train and validation
-    '''
-
-    df = pd.read_csv(TINY_TRAIN_FILE)
-
-    df_cols = df[['Consumer complaint narrative',
-                  'Company response to consumer']]. \
-        rename(columns={'Consumer complaint narrative': 'text',
-                        'Company response to consumer': 'label'})
-
-    # tokenize into strings
-    df_cols['text'] = df_cols['text'].str.split(" ")
-
-    train_df, test_df = train_test_split(df_cols, random_state=SEED)
-    train = [(n, r) for n, r in train_df.apply(lambda x: list(x), axis=1)]
-    test = [(n, r) for n, r in test_df.apply(lambda x: list(x), axis=1)]
-
-    return train, test
-
-
 def tokenize(x): 
     '''
     Tokenizer for torchtext. Right now, just splits on spaces
@@ -50,6 +27,53 @@ def tokenize(x):
     '''
     
     return x.split(" ")
+
+
+def encode_label(x):
+    '''
+    Converts string label into numeric label
+    IS THIS BAD???
+
+    Takes: string
+    Returns: arbitrary numeric assignment
+    '''
+
+    if x == "Closed with explanation":
+        # return [1, 0, 0, 0, 0]
+        return 0
+    elif x == "Closed with non-monetary relief":
+        # return [0, 1, 0, 0, 0]
+        return 1
+    elif x == "Closed with monetary relief":
+        # return [0, 0, 1, 0, 0]
+        return 2
+    elif x == "Untimely response":
+        # return [0, 0, 0, 1, 0]
+        return 3
+    elif x == "Closed":
+        # return [0, 0, 0, 0, 1]
+        return 4
+    elif x == "Closed with explanation":
+        # return [0, 0, 0, 0, 0]
+        return 5
+    else:
+        raise ValueError
+        print("Unexpected class label in one-hot encoding")
+
+
+
+def multiclass_accuracy(preds, y):
+    """
+    Return accuracy per batch
+    """
+
+    # assign label based on max predicted value, get index
+    predicted = preds.max(dim=1).indices
+
+    correct = (predicted == y).float()  # convert into float for division
+    acc = correct.sum() / len(correct)
+    return acc
+
 
 def load_and_tokenize_data(path=TINY_TRAIN_FILE):
     '''
@@ -65,7 +89,7 @@ def load_and_tokenize_data(path=TINY_TRAIN_FILE):
                    ('Sub-product', None),
                    ('Issue', None),
                    ('Sub-issue', None),
-                   ('Consumer complaint narrative', TEXT),
+                   ('narrative', TEXT), # note this is the field name, not colname in csv
                    ('Company public response', None),
                    ('Company', None),
                    ('State', None),
@@ -74,7 +98,7 @@ def load_and_tokenize_data(path=TINY_TRAIN_FILE):
                    ('Consumer consent provided?', None),
                    ('Submitted via', None),
                    ('Date sent to company', None),
-                   ('Company response to consumer', LABEL),
+                   ('label', LABEL), # ditto here
                    ('Timely response?', None),
                    ('Consumer disputed?', None),
                    ('Complaint ID', None)]
@@ -83,19 +107,6 @@ def load_and_tokenize_data(path=TINY_TRAIN_FILE):
                                          format='csv',
                                          skip_header=True,
                                          fields=data_fields)
-
-
-# from HW2 problem 3 notebook
-def binary_accuracy(preds, y):
-    """
-    Return accuracy per batch
-    """
-
-    # round predictions to the closest integer
-    rounded_preds = torch.round(torch.sigmoid(preds))
-    correct = (rounded_preds == y).float()  # convert into float for division
-    acc = correct.sum() / len(correct)
-    return acc
 
 
 # also from HW2 problem 3
@@ -124,7 +135,7 @@ class WordEmbAvg(nn.Module):
         z2 = self.linear2(z1)
         y_tilde = self.relu(z2)
 
-        return y_tilde
+        return F.log_softmax(y_tilde, dim=1) # TO DO: IS A SOFTMAX NECESSARY HERE?
 
 
 # also from HW2 problem 3
@@ -132,10 +143,10 @@ class Training_module():
 
     def __init__(self, model):
         self.model = model
-        self.loss_fn = nn.BCEWithLogitsLoss()  # TO DO: CHANGE THIS FOR MULTICLASS
+        self.loss_fn = nn.CrossEntropyLoss()  # TO DO: RECONSIDER THIS
 
         # Choose an optimizer
-        self.optimizer = optim.Adam(self.model.parameters())
+        self.optimizer = optim.Adam(self.model.parameters()) # TO DO: RECONSIDER
 
     def train_epoch(self, iterator):
         '''
@@ -151,13 +162,13 @@ class Training_module():
         epoch_acc = 0
 
         for batch in iterator:
-          # batch.text has the texts and batch.label has the labels.
+          # batch.narrative has the texts and batch.label has the labels.
 
             self.optimizer.zero_grad()
 
-            predictions = self.model(batch.text).squeeze()
+            predictions = self.model(batch.narrative)
             loss = self.loss_fn(predictions, batch.label)
-            accuracy = binary_accuracy(predictions, batch.label)
+            accuracy = multiclass_accuracy(predictions, batch.label)
 
             loss.backward()
             self.optimizer.step()
@@ -193,9 +204,9 @@ class Training_module():
 
             for batch in iterator:
 
-                predictions = self.model(batch.text).squeeze()
+                predictions = self.model(batch.narrative)
                 loss = self.loss_fn(predictions, batch.label)
-                acc = binary_accuracy(predictions, batch.label)
+                acc = multiclass_accuracy(predictions, batch.label)
 
                 epoch_loss += loss.item()
                 epoch_acc += acc.item()
@@ -206,10 +217,13 @@ class Training_module():
 if __name__ == "__main__":
 
         
-    TEXT = data.Field(sequential=True, tokenize=tokenize, lower=True)
-    LABEL = data.Field(sequential=False, use_vocab=False)
+    # define preprocessing pipeline object
+    NumericEncoder = data.Pipeline(convert_token=encode_label)
 
-    data_obj = load_and_tokenize_data()
+    TEXT = data.Field(sequential=True, tokenize=tokenize, lower=True)
+    LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=NumericEncoder)
+
+    data_obj = load_and_tokenize_data(TINY_TRAIN_FILE)
     train_data, valid_data = data_obj.split(random_state=random.seed(SEED))
 
     # create embeddings
@@ -221,10 +235,11 @@ if __name__ == "__main__":
 
     train_iterator, valid_iterator = data.BucketIterator.splits(
         (train_data, valid_data),
+        sort_key = lambda x: len(x.narrative),
+        sort_within_batch=False,
         batch_size = BATCH_SIZE)
 
     INPUT_DIM = len(TEXT.vocab)
-    # #You can try many different embedding dimensions. Common values are 20, 32, 64, 100, 128, 512
     EMBEDDING_DIM = 20
     HIDDEN_DIM = 50
     OUTPUT_DIM = 6
@@ -232,6 +247,8 @@ if __name__ == "__main__":
     PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 
     model = WordEmbAvg(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, PAD_IDX)
+
+
 
     tm = Training_module(model)
     best_model = tm.train_model(train_iterator, valid_iterator)
