@@ -107,7 +107,7 @@ complaints %>%
   ggplot(aes(x = reorder(product, percent),
              y = percent)) +
   geom_col(fill = blue_fill) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 45)) +
   scale_y_continuous(labels = scales::percent) +
   coord_flip() +
   labs(title = "Consumer credit and debt collection products receive 
@@ -117,8 +117,8 @@ the most complaints",
        y = "% complaints",
        caption = "Source: CFPB Consumer Complaints Database")
 
-# ggsave("explore/plots/complaints_by_product.png")
-
+# ggsave("plots/complaints_by_product.png",
+#        width = 8, height = 5, units = "in")
 
 # plot class distribution for issues
 complaints %>% 
@@ -127,13 +127,17 @@ complaints %>%
   ggplot(aes(x = reorder(issue, percent),
              y = percent)) +
   geom_col(fill = blue_fill) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 45)) +
   scale_y_continuous(labels = scales::percent) +
   coord_flip() +
-  labs(title = "Consumer credit and debt collection products receive the most complaints",
-       x = "Product",
+  labs(title = "Consumer credit products receive the most complaints",
+       subtitle = "% of complaints by issue for issues receiving > 1% of complaints",
+       x = "Issue",
        y = "% complaints",
        caption = "Source: CFPB Consumer Complaints Database")
+
+# ggsave("plots/complaint_share_by_issue.png",
+#        width = 8, height = 5, units = "in")
 
 # plot companies complained about
 complaints %>% 
@@ -166,7 +170,7 @@ complaints %>%
   labs(title = "Complaints fluctuate over time",
        subtitle = "Number of complaints received over time",
        x = "Date complaint received by CFPB",
-       y = "# somplaints",
+       y = "# complaints",
        caption = "Source: CFPB Consumer Complaints Database") 
 
 ggsave("plots/complaints_over_time_with_bars.png")
@@ -220,3 +224,17 @@ narrative_stats %>%
                     ymax = char_len_sd_high)) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 30)) +
   coord_flip() 
+
+#===============================================================================#
+# GET A COMPLAINT
+#===============================================================================#
+
+complaints %>% 
+  select(complaint_id, company, date_received, consumer_complaint_narrative) %>% 
+  filter(str_detect(company, "EQUIFAX")) %>% 
+  sample_frac(0.1) %>% 
+  View()
+
+c <- complaints %>% 
+  filter(complaint_id == "1291009")
+c$consumer_complaint_narrative

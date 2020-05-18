@@ -15,6 +15,10 @@ torch.manual_seed(SEED)
 TINY_TRAIN_FILE = "data/complaints_1k.csv"
 TINY_TEST_FILE = "data/complaints_500.csv"
 
+SMALL_TRAIN_FILE = "data/resampled_complaints_10k.csv"
+SMALL_TEST_FILE = "data/resampled_complaints_5k.csv"
+SMALL_VALIDATION_FILE = "data/resampled_complaints_3k.csv"
+
 BATCH_SIZE = 64
 MAX_VOCAB_SIZE = 25000
 
@@ -30,33 +34,24 @@ def tokenize(x):
     return x.split(" ")
 
 
-def encode_label(x):
+def one_hot_encode_label(x):
     '''
-    Converts string label into numeric label
-    IS THIS BAD???
+    Converts string label into one hot encoded label
 
     Takes: string
-    Returns: arbitrary numeric assignment
+    Returns: list with 1 in position corresponding to label 
     '''
 
     if x == "Closed with explanation":
-        # return [1, 0, 0, 0, 0]
-        return 0
+        return [1, 0, 0, 0, 0]
     elif x == "Closed with non-monetary relief":
-        # return [0, 1, 0, 0, 0]
-        return 1
+        return [0, 1, 0, 0, 0]
     elif x == "Closed with monetary relief":
-        # return [0, 0, 1, 0, 0]
-        return 2
+        return [0, 0, 1, 0, 0]
     elif x == "Untimely response":
-        # return [0, 0, 0, 1, 0]
-        return 3
+        return [0, 0, 0, 1, 0]
     elif x == "Closed":
-        # return [0, 0, 0, 0, 1]
-        return 4
-    elif x == "Closed with explanation":
-        # return [0, 0, 0, 0, 0]
-        return 5
+        return [0, 0, 0, 0, 1]
     else:
         raise ValueError
         print("Unexpected class label in one-hot encoding")
@@ -68,10 +63,11 @@ def multiclass_accuracy(preds, y):
     Return accuracy per batch
     """
 
-    # assign label based on max predicted value, get index
-    predicted = preds.max(dim=1).indices
-
-    correct = (predicted == y).float()  # convert into float for division
+    # assign label based on max predicted value, compare index
+    predicted = preds.max(dim=1, keepdim=True).indices
+    true = y.max(dim=1, keepdim=True).indices
+    
+    correct = (predicted == true).float()  # convert into float for division
     acc = correct.sum() / len(correct)
     return acc
 
@@ -85,29 +81,29 @@ def load_and_tokenize_data(path=TINY_TRAIN_FILE):
     '''
 
     # define which fields we want
-    data_fields = [('Date received', None),
-                   ('Product', None),
-                   ('Sub-product', None),
-                   ('Issue', None),
-                   ('Sub-issue', None),
+    data_fields = [('date_received', None),
+                   ('product', None),
+                   ('sub-product', None),
+                   ('issue', None),
+                   ('sub-issue', None),
                    ('narrative', TEXT), # note this is the field name, not colname in csv
-                   ('Company public response', None),
-                   ('Company', None),
-                   ('State', None),
-                   ('ZIP code', None),
-                   ('Tags', None),
-                   ('Consumer consent provided?', None),
-                   ('Submitted via', None),
-                   ('Date sent to company', None),
+                   ('company_public_response', None),
+                   ('company', None),
+                   ('state', None),
+                   ('zip_code', None),
+                   ('tags', None),
+                   ('consumer_consent_provided', None),
+                   ('submitted_via', None),
+                   ('date_sent_to_company', None),
                    ('label', LABEL), # ditto here
-                   ('Timely response?', None),
-                   ('Consumer disputed?', None),
-                   ('Complaint ID', None)]
+                   ('timely_response', None),
+                   ('consumer_disputed', None),
+                   ('complaint_id', None)]
 
     return data.TabularDataset(path=path,
-                                         format='csv',
-                                         skip_header=True,
-                                         fields=data_fields)
+                               format='csv',
+                               skip_header=True,
+                               fields=data_fields)
 
 
 # also from HW2 problem 3
@@ -127,11 +123,11 @@ class WordEmbAvg(nn.Module):
 
         embedded = self.embedding(text)
 
-        # take mean of words in each review
-        sentence = torch.mean(embedded, dim=0)
+        # take mean of words in each narrative: RECONSIDER?
+        narrative = torch.mean(embedded, dim=0)
 
         # pass through linear + ReLU layers
-        z1 = self.linear1(sentence)
+        z1 = self.linear1(narrative)
         h1 = self.relu(z1)
         z2 = self.linear2(z1)
         y_tilde = self.relu(z2)
@@ -144,7 +140,7 @@ class Training_module():
 
     def __init__(self, model):
         self.model = model
-        self.loss_fn = nn.CrossEntropyLoss()  # TO DO: RECONSIDER THIS
+        self.loss_fn = nn.MultiLabelSoftMarginLoss()  # TO DO: TUNE THIS
 
         # Choose an optimizer
         self.optimizer = optim.Adam(self.model.parameters()) # TO DO: RECONSIDER
@@ -163,7 +159,7 @@ class Training_module():
         epoch_acc = 0
 
         for batch in iterator:
-          # batch.narrative has the texts and batch.label has the labels.
+          # batch.narrative has the texts and batch.label has the labels
 
             self.optimizer.zero_grad()
 
@@ -219,14 +215,15 @@ if __name__ == "__main__":
 
         
     # define preprocessing pipeline object
-    NumericEncoder = data.Pipeline(convert_token=encode_label)
+    OneHotEncoder = data.Pipeline(convert_token=one_hot_encode_label)
 
+    # define text and label field objects with preprocessing
     TEXT = data.Field(sequential=True, tokenize=tokenize, lower=True)
-    LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=NumericEncoder)
+    LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=OneHotEncoder)
 
-    data_obj = load_and_tokenize_data(TINY_TRAIN_FILE)
-    train_data, valid_data = data_obj.split(random_state=random.seed(SEED))
-    test_data = load_and_tokenize_data(TINY_TEST_FILE)
+    train_data = load_and_tokenize_data(SMALL_TRAIN_FILE)
+    valid_data = load_and_tokenize_data(SMALL_VALIDATION_FILE)
+    test_data = load_and_tokenize_data(SMALL_TEST_FILE)
 
     # create embeddings
     TEXT.build_vocab(train_data, max_size=MAX_VOCAB_SIZE)
@@ -235,6 +232,7 @@ if __name__ == "__main__":
     print(f"Unique tokens in TEXT vocabulary: {len(TEXT.vocab)}")
     print(f"Unique tokens in LABEL vocabulary: {len(LABEL.vocab)}")
 
+
     train_iterator, valid_iterator, test_iterator = data.BucketIterator.splits(
         (train_data, valid_data, test_data),
         sort_key = lambda x: len(x.narrative),
@@ -242,9 +240,9 @@ if __name__ == "__main__":
         batch_size = BATCH_SIZE)
 
     INPUT_DIM = len(TEXT.vocab)
-    EMBEDDING_DIM = 20
+    EMBEDDING_DIM = 40
     HIDDEN_DIM = 50
-    OUTPUT_DIM = 6
+    OUTPUT_DIM = 5
     # #Get the index of the pad token using the stoi function
     PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 
@@ -262,5 +260,8 @@ if __name__ == "__main__":
 '''
 RESOURCES:
 https://mlexplained.com/2018/02/08/a-comprehensive-tutorial-to-torchtext/
+https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html
+https://pytorch.org/text/_modules/torchtext/data/dataset.html
+https://gist.github.com/ohmeow/5b3543a5115040001fce59a105ac4269
 
 '''
