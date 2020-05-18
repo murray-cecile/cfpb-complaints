@@ -10,6 +10,8 @@ import pandas as pd
 from torchtext import data
 from sklearn.model_selection import train_test_split
 
+from nn_models import WordEmbAvgLinear, WordEmbAvgRNN
+
 SEED = 1234
 torch.manual_seed(SEED)
 TINY_TRAIN_FILE = "data/complaints_1k.csv"
@@ -106,33 +108,7 @@ def load_and_tokenize_data(path=TINY_TRAIN_FILE):
                                fields=data_fields)
 
 
-# also from HW2 problem 3
-class WordEmbAvg(nn.Module):
-    def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim, pad_idx):
 
-        super().__init__()
-
-        # Define an embedding layer, a couple of linear layers, and
-        # the ReLU non-linearity.
-        self.embedding = nn.Embedding(input_dim, embedding_dim)
-        self.linear1 = nn.Linear(embedding_dim, hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, output_dim)
-        self.relu = nn.ReLU()
-
-    def forward(self, text):
-
-        embedded = self.embedding(text)
-
-        # take mean of words in each narrative: RECONSIDER?
-        narrative = torch.mean(embedded, dim=0)
-
-        # pass through linear + ReLU layers
-        z1 = self.linear1(narrative)
-        h1 = self.relu(z1)
-        z2 = self.linear2(z1)
-        y_tilde = self.relu(z2)
-
-        return y_tilde
 
 
 # also from HW2 problem 3
