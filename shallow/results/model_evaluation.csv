@@ -1,0 +1,3 @@
+Classifier,Score,Time Elapsed,Parameters
+RandomForestClassifier,0.8243750000000001,11.900675773620605,"{'estimator__max_depth': 3, 'estimator__n_estimators': 10}"
+SVC,0.8243750000000001,45.79232883453369,"{'estimator__C': 0.01, 'estimator__kernel': 'linear'}"
