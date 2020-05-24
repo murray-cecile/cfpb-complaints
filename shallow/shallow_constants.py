@@ -8,11 +8,11 @@ from sklearn.svm import SVC
 
 # Input files 
 # Also accessible from http://files.consumerfinance.gov/ccdb/complaints.csv.zip 
-COMPLAINTS_CSV = '../../data/complaints.csv'
+COMPLAINTS_CSV = '../data/complaints.csv'
 
 # Output files 
 FEATURE_IMPORTANCE_OUT = 'results/feature_importance.json'
-MODEL_EVALUATION_OUT = 'results/model_evaluation.out'
+MODEL_EVALUATION_OUT = 'results/model_evaluation.csv'
 PROCESSED_DATA_DIR = 'processed_data'
 
 # Column names 

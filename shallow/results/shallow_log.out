@@ -1,0 +1,105 @@
+
+ ---------- LOADING DATA ---------- 
+
+Distribution of training labels: 
+Closed with explanation            0.824375
+Closed with non-monetary relief    0.108750
+Closed with monetary relief        0.058125
+Untimely response                  0.004375
+Closed                             0.004375
+Name: company_response_to_consumer, dtype: float64
+
+
+Training samples: 1600
+Testing samples: 400
+
+ ---------- TRAINING MODELS ---------- 
+
+Classifier: RandomForestClassifier
+Best score: 0.8243750000000001
+Best parameters: {'estimator__max_depth': 3, 'estimator__n_estimators': 10}
+Time elapsed: 11.900675773620605
+
+
+Classifier: SVC
+Best score: 0.8243750000000001
+Best parameters: {'estimator__C': 0.01, 'estimator__kernel': 'linear'}
+Time elapsed: 45.79232883453369
+
+
+Overall best classifier: RandomForestClassifier
+Overall best score 0.8243750000000001
+Best parameters: {'estimator__max_depth': 3, 'estimator__n_estimators': 10}
+
+ ---------- EVALUATING PREDICTIONS ---------- 
+
+                                 precision    recall  f1-score   support
+
+                         Closed       0.00      0.00      0.00         4
+        Closed with explanation       0.80      1.00      0.89       320
+    Closed with monetary relief       0.00      0.00      0.00        25
+Closed with non-monetary relief       0.00      0.00      0.00        49
+              Untimely response       0.00      0.00      0.00         2
+
+                       accuracy                           0.80       400
+                      macro avg       0.16      0.20      0.18       400
+                   weighted avg       0.64      0.80      0.71       400
+
+
+ ---------- EVALUATING PROBABILITIES ---------- 
+
+                                 Closed  Closed with explanation  Closed with monetary relief  Closed with non-monetary relief  Untimely response
+y_true                                                                                                                                           
+Closed                            0.009                    0.831                        0.052                            0.100              0.007
+Closed with explanation           0.005                    0.827                        0.057                            0.106              0.004
+Closed with monetary relief       0.007                    0.791                        0.098                            0.101              0.004
+Closed with non-monetary relief   0.005                    0.819                        0.057                            0.114              0.004
+Untimely response                 0.003                    0.846                        0.059                            0.090              0.003
+
+ ---------- FEATURE IMPORTANCE ---------- 
+
+Class: Closed
+                                 feature  importance
+0        product_Bank account or service    0.097788
+237  company_Ocwen Financial Corporation    0.093332
+239                        company_Other    0.085817
+303                             state_NJ    0.082412
+329                        week_2016-w03    0.075702
+
+
+Class: Closed with explanation
+                                       feature  importance
+537                                 word_count    0.064431
+105  issue_Problem with a purchase or transfer    0.049652
+4          product_Credit card or prepaid card    0.049122
+202    company_Dynamic Recovery Solutions, LLC    0.044601
+187                     company_CITIBANK, N.A.    0.043806
+
+
+Class: Closed with monetary relief
+                                 feature  importance
+4    product_Credit card or prepaid card    0.147703
+1    product_Checking or savings account    0.108907
+536                           char_count    0.083336
+222         company_JPMORGAN CHASE & CO.    0.058651
+194                     company_Comerica    0.046643
+
+
+Class: Closed with non-monetary relief
+                                               feature  importance
+208        company_Experian Information Solutions Inc.    0.120982
+92          issue_Incorrect information on your report    0.088299
+6    product_Credit reporting, credit repair servic...    0.059869
+265                               company_U.S. BANCORP    0.053933
+247              company_REGIONS FINANCIAL CORPORATION    0.043140
+
+
+Class: Untimely response
+                                           feature  importance
+86        issue_False statements or representation    0.103703
+141  sub-issue_Information belongs to someone else    0.096707
+384                                  week_2017-w05    0.091827
+323                                   tags_Missing    0.090381
+504                                  week_2019-w21    0.085477
+
+

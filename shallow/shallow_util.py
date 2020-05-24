@@ -214,8 +214,8 @@ def find_best_model(X_train, y_train, verbose=True):
     # Initialize results dataframe 
     results_df = pd.DataFrame(columns=['Classifier', 
                                        'Score', 
-                                       'Parameters', 
-                                       'Time Elapsed'])
+                                       'Time Elapsed', 
+                                       'Parameters'])
     best_score = 0 
     best_clf = ''
     best_params = ''
@@ -243,8 +243,8 @@ def find_best_model(X_train, y_train, verbose=True):
         # Store best models for each classifier method 
         results_df.loc[len(results_df)] = [model.estimator.__class__.__name__, 
                                            grid.best_score_, 
-                                           grid.best_params_, 
-                                           time_elapsed]
+                                           time_elapsed, 
+                                           grid.best_params_]
 
         if verbose: 
             print('Best score:', grid.best_score_)
@@ -260,7 +260,7 @@ def find_best_model(X_train, y_train, verbose=True):
 
 
     # Write out model cross validation results 
-    results_df.to_csv(MODEL_EVALUATION_OUT, sep='\t', index=False)
+    results_df.to_csv(MODEL_EVALUATION_OUT, index=False)
 
     # Return overall best classifier trained on full training set 
     best_clf.set_params(**best_params)
