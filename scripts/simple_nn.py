@@ -10,7 +10,7 @@ import pandas as pd
 from torchtext import data
 from sklearn.model_selection import train_test_split
 
-from nn_models import WordEmbAvgLinear, WordEmbAvgRNN
+from nn_models import WordEmbAvgLinear, WordEmbAvgRNN, BasicRNN
 
 SEED = 1234
 torch.manual_seed(SEED)
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     # #Get the index of the pad token using the stoi function
     PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 
-    model = WordEmbAvg(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, PAD_IDX)
+    # model = WordEmbAvg(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, PAD_IDX)
 
 
 
