@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import pandas as pd
 
 from torchtext import data
+from torch.nn.utils.rnn import pad_sequence
 
 import deep_util as util
 from deep_models import *
@@ -21,10 +22,11 @@ DEVELOPING = True
 # DEVELOPING = False
 
 if DEVELOPING:
-    files = ["data/complaints_5k.csv", \
-                "data/complaints_3k.csv", \
+    # in order: train, validation, test
+    files = ["data/complaints_3k.csv", \
+                "data/complaints_500.csv", \
                 "data/complaints_1k.csv"]
-    BATCH_SIZE = 10
+    BATCH_SIZE = 8
     MAX_VOCAB_SIZE = 5000
 else:
     BATCH_SIZE = 64
@@ -135,8 +137,8 @@ def optimize_params(parameters, train_iter, val_iter):
     if USE_CUDA:
         model = model.cuda()
 
-    # TO DO: don't not want to set these here
-    learning_rate = 0.001 
+    # TO DO: maybe don't want to set these here
+    learning_rate = 0.01 # 0.001 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     
     val_losses = []
@@ -154,6 +156,10 @@ def optimize_params(parameters, train_iter, val_iter):
             # extract narrative and label for batch
             batch_text = batch.narrative
             target = batch.label
+
+            # debugging batch size issue
+            # print("\t \t narrative shape", batch.narrative.shape)
+            # print("\t \t hidden shape", hidden.shape)
 
             # if using a CUDA, put text on CUDA
             if USE_CUDA:
@@ -184,8 +190,8 @@ def optimize_params(parameters, train_iter, val_iter):
             nn.utils.clip_grad_norm_(model.parameters(), max_norm = GRAD_CLIP) 
             optimizer.step()
             
-            # evaluate model every 500 iterations
-            if i % 500 == 0:
+            # evaluate model every 1000 iterations
+            if i % 1000 == 0:
                 
                 # compute loss, see if this is best model, append loss to loss list
                 current_loss = model.evaluate(val_iter)
@@ -201,7 +207,7 @@ def optimize_params(parameters, train_iter, val_iter):
     return best_model, time.time() - start_time
 
 
-def run_model(model_params, train_iter, valid_iter, test_iter, model_file, save=True):
+def run_model(model_params, train_iter, valid_iter, test_iter, save=False, model_file=''):
     '''
     Trains single model w/ given parameters and evaluates on test
 
@@ -268,4 +274,4 @@ if __name__ == "__main__":
 
 
     # this can get put into a loop, if it doesn't run insanely slowly
-    best_model, train_time, perplexity = run_model(parameters, *iters, "test.pt")
+    best_model, train_time, perplexity = run_model(parameters, *iters, save=False)

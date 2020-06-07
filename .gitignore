@@ -1,6 +1,9 @@
 # data files
 *.csv
 
+# models
+*.pt
+
 # exploratory plot images
 explore/plots
 

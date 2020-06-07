@@ -30,7 +30,7 @@ class WordEmbAvgLinear(nn.Module):
 
         embedded = self.embedding(text)
 
-        # take mean of words in each narrative
+        # take mean of words in each narrative?
         narrative = torch.mean(embedded, dim=0)
 
         # pass through linear + ReLU layers

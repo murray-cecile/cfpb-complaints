@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import pandas as pd
 
 from torchtext import data
+from torch.nn.utils.rnn import pad_sequence
 
 '''
 PREPROCESSING
@@ -46,6 +47,7 @@ def one_hot_encode_label(x):
         print("Unexpected class label in one-hot encoding")
         print(x)
         raise ValueError
+
 
 '''
 MODEL TRAINING
