@@ -17,8 +17,8 @@ SEED = 1234
 torch.manual_seed(SEED)
 
 # TO DO: improve this structure
-DEVELOPING = True
-# DEVELOPING = False
+# DEVELOPING = True
+DEVELOPING = False
 
 if DEVELOPING:
     # in order: train, validation, test
@@ -28,6 +28,10 @@ if DEVELOPING:
     BATCH_SIZE = 7
     MAX_VOCAB_SIZE = 5000
 else:
+    # in order: train, validation, test
+    files = ["data/full_training_set.csv", \
+                "data/full_validation_set.csv", \
+                "data/full_testing_set.csv"]    
     BATCH_SIZE = 64
     MAX_VOCAB_SIZE = 25000
     # TO DO: make full files
@@ -40,7 +44,7 @@ def load_and_tokenize_data(path, TEXT, LABEL):
 
     Takes: 
     - file path to data csv
-    - TEXT field definition object
+    - TEXT field defini sction object
     - LABEL field definition object
     Returns: 
     - Tabular dataset type
