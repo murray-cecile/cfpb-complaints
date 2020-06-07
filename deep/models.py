@@ -117,7 +117,7 @@ class RNNModel(nn.Module):
 
         return decoded, hiddenn
     
-    def evaluate(self, data):
+    def evaluate(self, data, global_batch_size):
         '''
         Evaluate model on data.
         
@@ -129,6 +129,7 @@ class RNNModel(nn.Module):
         it = iter(data)
         total_count = 0. 
         total_loss = 0. 
+        last_batch_size = global_batch_size
         with torch.no_grad():
 
             # Initialize hidden vector
@@ -136,9 +137,14 @@ class RNNModel(nn.Module):
             
             for i, batch in enumerate(it):
                                         
-                # extract text and target for batch
+                # extract narrative and label for batch
                 batch_text = batch.narrative
                 target = batch.label
+
+                # drop last batch if it is too short
+                # happens when number of narratives not divisible by batch size
+                if i > 0 and batch_text.shape[1] != last_batch_size:
+                    break
             
                 # zero out gradients for current batch and call forward propagation
                 self.zero_grad()
@@ -149,7 +155,10 @@ class RNNModel(nn.Module):
                 else:
                     hidden = hiddenn
 
-                # reshape target so there is one one-hot-encoded vector per word?
+                # keep track of batch size
+                last_batch_size = batch.batch_size
+
+                # reweight loss - IS THIS RIGHT?
                 words_in_batch, batch_size, C = decoded.shape
                 N = words_in_batch * batch_size
                 
@@ -159,7 +168,8 @@ class RNNModel(nn.Module):
                 
                 # count number of target words in batch (same dims as target)
                 total_count += N
-                
+            
+
         loss = total_loss / total_count
         self.train()
         return loss

@@ -8,10 +8,9 @@ import torch.nn.functional as F
 import pandas as pd
 
 from torchtext import data
-from torch.nn.utils.rnn import pad_sequence
 
-import deep_util as util
-from deep_models import *
+import util as util
+from models import *
 
 
 SEED = 1234
@@ -26,7 +25,7 @@ if DEVELOPING:
     files = ["data/complaints_3k.csv", \
                 "data/complaints_500.csv", \
                 "data/complaints_1k.csv"]
-    BATCH_SIZE = 8
+    BATCH_SIZE = 7
     MAX_VOCAB_SIZE = 5000
 else:
     BATCH_SIZE = 64
@@ -140,7 +139,8 @@ def optimize_params(parameters, train_iter, val_iter):
     # TO DO: maybe don't want to set these here
     learning_rate = 0.01 # 0.001 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    
+    last_batch_size = BATCH_SIZE
+
     val_losses = []
     best_model = None
     start_time = time.time()
@@ -157,9 +157,10 @@ def optimize_params(parameters, train_iter, val_iter):
             batch_text = batch.narrative
             target = batch.label
 
-            # debugging batch size issue
-            # print("\t \t narrative shape", batch.narrative.shape)
-            # print("\t \t hidden shape", hidden.shape)
+            # drop last batch if it is too short
+            # happens when number of narratives not divisible by batch size
+            if i > 0 and batch_text.shape[1] != last_batch_size:
+                break
 
             # if using a CUDA, put text on CUDA
             if USE_CUDA:
@@ -174,9 +175,9 @@ def optimize_params(parameters, train_iter, val_iter):
                 hidden = hiddenn[0].detach(), hiddenn[1].detach()
             else:
                 hidden = hiddenn.detach()
-            
-#             print("\t \t decoded shape", decoded.shape)
-#             print("\t \t target shape", target.shape)
+
+            # keep track of batch size
+            last_batch_size = batch.batch_size
 
             # compute cross entropy loss 
             loss = model.loss_fn(decoded, target)
@@ -189,12 +190,13 @@ def optimize_params(parameters, train_iter, val_iter):
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), max_norm = GRAD_CLIP) 
             optimizer.step()
-            
+        
+
             # evaluate model every 1000 iterations
-            if i % 1000 == 0:
+            if i % 10000 == 0:
                 
                 # compute loss, see if this is best model, append loss to loss list
-                current_loss = model.evaluate(val_iter)
+                current_loss = model.evaluate(val_iter, BATCH_SIZE)
                 
                 if len(val_losses) == 0 or current_loss < min(val_losses):
                     best_model = model
@@ -222,16 +224,16 @@ def run_model(model_params, train_iter, valid_iter, test_iter, save=False, model
 
     best_model, train_time = optimize_params(model_params, train_iter, valid_iter)
     
-    # compute perplexity
-    perplexity = torch.exp(best_model.evaluate(test_iter))
-    print("Perplexity of best model on testing set:", perplexity)
+    # compute loss on test set
+    test_loss = best_model.evaluate(test_iter, BATCH_SIZE)
+    print("Loss of best model on testing set:", test_loss)
 
     # save state
     if save:
         optimized_dict = best_model.state_dict()
         util.save_model(optimized_dict, model_file)
 
-    return best_model, train_time, perplexity
+    return best_model, train_time, test_loss
 
 if __name__ == "__main__":
     
@@ -274,4 +276,4 @@ if __name__ == "__main__":
 
 
     # this can get put into a loop, if it doesn't run insanely slowly
-    best_model, train_time, perplexity = run_model(parameters, *iters, save=False)
+    best_model, train_time, test_loss = run_model(parameters, *iters, save=False)
