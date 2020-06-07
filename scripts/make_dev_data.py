@@ -33,12 +33,12 @@ if __name__ == "__main__":
     #drop rows where consumer complaints missing
     full_df.dropna(subset=['Consumer complaint narrative'], inplace=True)
 
-    # get_n_rows(full_df, 1000).to_csv("data/complaints_1k.csv", index=False)
+    # get_n_rows(full_df, 1000, keep=True).to_csv("data/complaints_1k.csv", index=False)
     # get_n_rows(full_df, 500).to_csv("data/complaints_500.csv", index=False)
 
     # get_n_rows(full_df, 10000, keep=True).to_csv("data/complaints_10k.csv", index=False)
     # get_n_rows(full_df, 5000, keep=True).to_csv("data/complaints_5k.csv", index=False)
 
-    get_n_rows(full_df, 3000, keep=True).to_csv("data/complaints_3k.csv", index=False)
-    
+    # get_n_rows(full_df, 3000, keep=True).to_csv("data/complaints_3k.csv", index=False)
+    get_n_rows(full_df, 500, keep=True).to_csv("data/complaints_500.csv", index=False)
 
