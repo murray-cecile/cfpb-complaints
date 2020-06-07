@@ -5,6 +5,7 @@ import time
 import os
 
 from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -117,7 +118,14 @@ def process_narrative(df):
     return char_count, word_count
 
 
-def split_resample(X, y, normalize=True, resample=False, verbose=True): 
+def get_count(series, val): 
+    '''
+    Helper function for resampling below. 
+    '''
+    return int(series[series == val].shape[0])
+
+
+def split_resample(X, y, normalize=True, resample=True, verbose=True): 
     '''
     Creates train-test-splits, normalizes continuous features, resamples training 
     data using SMOTE. 
@@ -146,6 +154,19 @@ def split_resample(X, y, normalize=True, resample=False, verbose=True):
 
     # Resample training data to balance classes 
     if resample: 
+
+        # Under-sample majority classes 
+        under_sampling_dict = {
+            'Closed with explanation': int(get_count(y_train, 'Closed with explanation') * FRAC_MAJORITY), 
+            'Closed': get_count(y_train, 'Closed'), 
+            'Untimely response': get_count(y_train, 'Untimely response'), 
+            'Closed with non-monetary relief': get_count(y_train, 'Closed with non-monetary relief'), 
+            'Closed with monetary relief': get_count(y_train, 'Closed with monetary relief'), 
+        }
+        rus = RandomUnderSampler(sampling_strategy=under_sampling_dict, random_state=0)
+        X_train, y_train = rus.fit_resample(X_train, y_train)
+
+        # Over-sample minority classes 
         sm = SMOTE(random_state=0) 
         X_train, y_train = sm.fit_sample(X_train, y_train)
 
@@ -211,11 +232,15 @@ def find_best_model(X_train, y_train, verbose=True):
     # Specify cross-validation evaluation criteria 
     scorer = make_scorer(CV_METRIC, average=CV_AVERAGE)
 
-    # Initialize results dataframe 
-    results_df = pd.DataFrame(columns=['Classifier', 
-                                       'Score', 
-                                       'Time Elapsed', 
-                                       'Parameters'])
+    # Initialize best results dataframe 
+    best_results_df = pd.DataFrame(columns=['classifier', 
+                                        'mean_test_score', 
+                                        'time', 
+                                        'params'])
+
+    # Initialize full results dataframe 
+    all_results_df = []
+
     best_score = 0 
     best_clf = ''
     best_params = ''
@@ -241,10 +266,15 @@ def find_best_model(X_train, y_train, verbose=True):
         time_elapsed = time.time() - start_time 
 
         # Store best models for each classifier method 
-        results_df.loc[len(results_df)] = [model.estimator.__class__.__name__, 
-                                           grid.best_score_, 
-                                           time_elapsed, 
-                                           grid.best_params_]
+        best_results_df.loc[len(best_results_df)] = [model.estimator.__class__.__name__, 
+                                                     grid.best_score_,
+                                                     time_elapsed, 
+                                                     grid.best_params_]
+
+        # Store full results for each classifier method 
+        clf_results_df = pd.DataFrame(grid.cv_results_)[['params', 'mean_test_score', 'mean_fit_time']]
+        clf_results_df['classifier'] = model.estimator.__class__.__name__
+        all_results_df.append(clf_results_df)  
 
         if verbose: 
             print('Best score:', grid.best_score_)
@@ -260,7 +290,10 @@ def find_best_model(X_train, y_train, verbose=True):
 
 
     # Write out model cross validation results 
-    results_df.to_csv(MODEL_EVALUATION_OUT, index=False)
+    best_results_df.to_csv(MODEL_EVALUATION_OUT, index=False)
+
+    all_results_concat = pd.concat(all_results_df)[['classifier', 'mean_test_score', 'mean_fit_time', 'params']]
+    all_results_concat.to_csv(MODEL_EVALUATION_OUT_FULL, index=False)
 
     # Return overall best classifier trained on full training set 
     best_clf.set_params(**best_params)
@@ -337,6 +370,11 @@ def feature_importance(clf, X_train, verbose=True):
 
     # Initialize importance dictionary 
     feat_imp_dict = {} 
+
+    # Manage feature importance for SVM 
+    if clf.estimator.__class__.__name__ == 'SVC': 
+        print('Feature importance not available for classifier')
+    return feat_imp_dict
 
     # Loop over label classes 
     for i, label in enumerate(clf.classes_):

@@ -4,7 +4,7 @@ from shallow_constants import *
 pd.set_option('expand_frame_repr', False)
 
 
-def shallow_run(existing=True): 
+def shallow_run(existing=False): 
     '''
     Runs through the full machine learning pipeline. This includes loading the raw data, 
     processing and creating features, running a grid search over model specifications, and  
@@ -29,7 +29,6 @@ def shallow_run(existing=True):
         # Load data
         print('\n ---------- LOADING DATA ---------- \n')
         cfpb = util.load_data()
-        cfpb = cfpb.sample(n=2000) 
 
         # Create features and label columns 
         cfpb_X = util.process_features(cfpb)
@@ -38,7 +37,7 @@ def shallow_run(existing=True):
         # Split training and testing data 
         print('\n ---------- RESAMPLING TRAINING DATA ---------- \n')
         X_train, X_test, y_train, y_test = util.split_resample(cfpb_X, cfpb_y) 
-
+        
 
     # Train models 
     print('\n ---------- TRAINING MODELS ---------- \n')
@@ -59,6 +58,8 @@ def shallow_run(existing=True):
     # Summarize feature importance 
     print('\n ---------- FEATURE IMPORTANCE ---------- \n')
     feature_importance = util.feature_importance(best_clf, X_train)
+
+    print('\n -------------------- \n')
 
 
 if __name__ == "__main__":

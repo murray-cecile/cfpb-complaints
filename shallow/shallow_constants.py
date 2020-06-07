@@ -1,9 +1,11 @@
 import warnings
 import pandas as pd 
+import numpy as np
 
 from sklearn.metrics import f1_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 
 # Input files 
@@ -13,6 +15,7 @@ COMPLAINTS_CSV = '../data/complaints.csv'
 # Output files 
 FEATURE_IMPORTANCE_OUT = 'results/feature_importance.json'
 MODEL_EVALUATION_OUT = 'results/model_evaluation.csv'
+MODEL_EVALUATION_OUT_FULL = 'results/model_evaluation_full.csv'
 PROCESSED_DATA_DIR = 'processed_data'
 
 # Column names 
@@ -42,6 +45,9 @@ CONTINUOUS_COLUMNS = [
     'word_count'
 ]
 
+# Fraction of the majority class to sample 
+FRAC_MAJORITY = 0.2 
+
 # k in k-fold cross validation 
 K = 5
 
@@ -51,17 +57,18 @@ CV_AVERAGE = 'micro'
 
 # Models 
 MODELS = {
+    'LR': OneVsRestClassifier(LogisticRegression(max_iter=1000)), 
     'RF':  OneVsRestClassifier(RandomForestClassifier()), 
-    'SVM': OneVsRestClassifier(SVC())
+    'SVM': OneVsRestClassifier(SVC(probability=True))
 }
 
-# Model parameters 
 PARAMETERS = {
-    'RF':  {'estimator__n_estimators': [10, 20], 
-           'estimator__max_depth': [3, 5, 10]}, 
-    'SVM': {'estimator__C': [0.01, 0.1], 
+    'LR':  {'estimator__penalty': ['l2'], 
+            'estimator__C': [0.1, 1.0, 10]}, 
+    'RF':  {'estimator__n_estimators': [int(x) for x in np.linspace(start=10, stop=200, num=5)], 
+           'estimator__max_depth': [int(x) for x in np.linspace(start=10, stop=200, num=5)]}, 
+    'SVM': {'estimator__C': [0.1, 1.0, 10], 
             'estimator__kernel': ['linear', 'rbf']} 
 }
-
 
 
