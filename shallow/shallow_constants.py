@@ -4,13 +4,15 @@ import numpy as np
 
 from sklearn.metrics import f1_score
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
 
 # Input files 
-# Also accessible from http://files.consumerfinance.gov/ccdb/complaints.csv.zip 
 COMPLAINTS_CSV = 'http://files.consumerfinance.gov/ccdb/complaints.csv.zip'
+# COMPLAINTS_CSV = 'data/complaints.csv'
 
 # Output files 
 FEATURE_IMPORTANCE_OUT = 'results/feature_importance.json'
@@ -57,18 +59,23 @@ CV_AVERAGE = 'micro'
 
 # Models 
 MODELS = {
-    'LR': OneVsRestClassifier(LogisticRegression(max_iter=1000)), 
+    'LR':  OneVsRestClassifier(LogisticRegression(max_iter=1000)), 
+    'NB':  OneVsRestClassifier(GaussianNB()), 
     'RF':  OneVsRestClassifier(RandomForestClassifier()), 
-    'SVM': OneVsRestClassifier(SVC(probability=True))
+    'SVM': OneVsRestClassifier(SVC(probability=True)), 
+    'GBT': OneVsRestClassifier(GradientBoostingClassifier())
 }
 
 PARAMETERS = {
     'LR':  {'estimator__penalty': ['l2'], 
             'estimator__C': [0.1, 1.0, 10]}, 
+    'NB':  {}, 
     'RF':  {'estimator__n_estimators': [int(x) for x in np.linspace(start=10, stop=200, num=5)], 
            'estimator__max_depth': [int(x) for x in np.linspace(start=10, stop=200, num=5)]}, 
     'SVM': {'estimator__C': [0.1, 1.0, 10], 
-            'estimator__kernel': ['linear']} 
+            'estimator__kernel': ['linear']}, 
+    'GBT': {'estimator__learning_rate': [0.1, 1.0, 0.5], 
+            'estimator__max_depth': [int(x) for x in np.linspace(start=10, stop=200, num=5)]}
 }
 
 
