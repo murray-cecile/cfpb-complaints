@@ -1,0 +1,3 @@
+Note that in order to get the models to run in a reasonable amount of time, we had to run a smaller set of hyperpamater options, and we had to parallelize this pipeline by running each classifier on a separate EC2 instance. Note that even with this parallelized approach, the process takes over 24 hours to run. 
+
+As a result, the output files `model_evaluation.csv`, `model_evaluation_full.csv`, `shallow_log.out` and `feature_importance.json` reflect the pipeline output on a development dataset (to demonstrate the full pipeline process). The results from the separate EC2 instances on the full dataset are manually collated in `FULL_shallow_log.out` file. 

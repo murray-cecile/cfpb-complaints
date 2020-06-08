@@ -2,6 +2,11 @@
 
 This subdirectory contains the code to create and run RNN models for the two prediction tasks.
 
+- `make_datasets.py` creates the various datasets used in building the learners: 
+    - full training, validation, and testing sets 
+    - development training, validation, and testing sets 
+    - resampled training set (undersampling the majority class and oversampling the minority classes)
+
 - `RUN.ipynb` is a notebook that essentially implements `deep_main.py` for Amazon Sagemaker
 
 - `deep_main.py` does the following: 
@@ -10,7 +15,6 @@ This subdirectory contains the code to create and run RNN models for the two pre
     - defines a model object instance with specific hyperparameters
     - optimizes the hyperparameters
     - evaluates model performance on the test set
-
 
 - `models.py` contains the model classes
     - WordEmbedAvgLinear is a simple linear model with a ReLU that averages word-level embeddings for each narrative.
