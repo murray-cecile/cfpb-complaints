@@ -24,7 +24,7 @@ def tokenize(x):
     return x.split(" ")
 
 
-def one_hot_encode_company_response(x):
+def one_hot_encode_response(x):
     '''
     Converts string company response into one hot encoded label
 
