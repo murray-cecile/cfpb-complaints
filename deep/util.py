@@ -24,11 +24,11 @@ def tokenize(x):
     return x.split(" ")
 
 
-def one_hot_encode_label(x):
+def one_hot_encode_company_response(x):
     '''
-    Converts string label into one hot encoded label
+    Converts string company response into one hot encoded label
 
-    Takes: string
+    Takes: label string
     Returns: list with 1 in position corresponding to label 
     '''
 
@@ -46,6 +46,44 @@ def one_hot_encode_label(x):
         print("Unexpected class label in one-hot encoding")
         print(x)
         raise ValueError
+
+
+def one_hot_encode_product(x):
+    '''
+    Converts string product category into one hot encoded label
+
+    Takes: label string
+    Returns: list with 1 in position corresponding to label 
+    '''
+
+    # list of product types
+    product_types = ['Debt collection', \
+                    'Credit reporting, credit repair services, or other personal consumer reports', \
+                    'Vehicle loan or lease', \
+                    'Mortgage', \
+                    'Credit card or prepaid card', \
+                    'Money transfer, virtual currency, or money service', \
+                    'Student loan', \
+                    'Checking or savings account', \
+                    'Payday loan, title loan, or personal loan', \
+                    'Credit card', \
+                    'Consumer Loan', \
+                    'Payday loan', \
+                    'Bank account or service', \
+                    'Credit reporting', \
+                    'Prepaid card', \
+                    'Other financial service', \
+                    'Money transfers', \
+                    'Virtual currency']
+
+    encoded = [1 if x == i  else 0 for i in product_types]
+    
+    if sum(encoded) == 0:
+        print("Unknown product type:")
+        print(x)
+        raise ValueError
+
+    return encoded
 
 
 '''
