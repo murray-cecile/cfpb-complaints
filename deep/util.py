@@ -9,6 +9,8 @@ import pandas as pd
 
 from torchtext import data
 
+from models import RNNModel
+
 '''
 PREPROCESSING
 '''
@@ -96,20 +98,33 @@ def multiclass_accuracy(preds, y):
     Compute accuracy for multiclass classification
 
     Takes: 
-    - predictions matrix: each row contains predicted score for each class
+    - predictions matrix: the output of decoded 
     - true label matrix: each row is a one hot encoded vector corresponding
                          to the true class
     Returns: accuracy score
     '''
 
-    # assign label based on max predicted value, compare index
-    predicted = preds.max(dim=1, keepdim=True).indices
-    true = y.max(dim=1, keepdim=True).indices
-    
-    correct = (predicted == true).float()  # convert into float for division
-    acc = correct.sum() / len(correct)
-    return acc
+    # print("preds shape", preds.shape)
+    # print(preds)
+    # print("y shape is", y.shape)
+    # print(y)
 
+    # assign label based on max predicted value, compare index
+    predicted = torch.softmax(preds, dim=2).argmax(dim=2, keepdim=True).squeeze()
+    true = y.max(dim=1, keepdim=True).indices.squeeze()
+    true = true.repeat(predicted.shape[0], 1, 1).view(predicted.shape).squeeze()
+
+#     print("predicted shape", predicted.shape)
+#     print(predicted)
+#     print("true shape is", true.shape)
+#     print(true)
+
+    correct = (predicted == true).float()  # convert into float for division
+    print("correct shape is", correct.shape)
+    print(correct.sum(dim=1))
+    acc = correct.sum(dim=1) / correct.shape[0]
+
+    return acc.mean()
 
 '''
 LOADING/SAVING
@@ -138,12 +153,9 @@ def load_model(params, filename):
     Returns:
     - model object
     '''
-    best_model = RNNModel(*list(parameters.values()))
-    
-    if USE_CUDA:
-        best_model = best_model.cuda()
-    
+    trained_model = RNNModel(*list(params.values()))
+        
     path = F"./models/{filename}" 
-    best_model.load_state_dict(torch.load(path), strict=False)
-    return best_model
+    trained_model.load_state_dict(torch.load(path), strict=False)
+    return trained_model
 

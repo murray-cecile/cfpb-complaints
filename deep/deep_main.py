@@ -17,9 +17,9 @@ SEED = 1234
 torch.manual_seed(SEED)
 
 # CONFIGURE THESE PARAMETERS
-DEVELOPING = True
-# DEVELOPING = False
-WHICH_TASK = "product" # also can be "response"
+# DEVELOPING = True
+DEVELOPING = False
+WHICH_TASK = "response" # also can be "response"
 
 if DEVELOPING:
     # in order: train, validation, test
@@ -305,7 +305,7 @@ if __name__ == "__main__":
 
 
     if WHICH_TASK == "response":
-        company_response_parameters = {
+        parameters = {
             "model_type": "LSTM", \
             "vocab_size": INPUT_DIM, \
             "embedding_size": 40, \
@@ -325,4 +325,4 @@ if __name__ == "__main__":
             "dropout": 0.5
         }
 
-    best_model, train_time, test_loss = run_model(WHICH_TASK, company_response_parameters, *iters, save=True, model_file='trained_model.pt')
+    best_model, train_time, test_loss = run_model(WHICH_TASK, parameters, *iters, save=True, model_file='trained_model_full_responses.pt')
