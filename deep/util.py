@@ -94,7 +94,6 @@ MODEL EVALUATION
 
 def multiclass_accuracy(preds, y):
     '''
-    MAY NOT BE WORKING YET
     Compute accuracy for multiclass classification
 
     Takes: 
@@ -104,28 +103,67 @@ def multiclass_accuracy(preds, y):
     Returns: accuracy score
     '''
 
-    # print("preds shape", preds.shape)
-    # print(preds)
-    # print("y shape is", y.shape)
-    # print(y)
-
     # assign label based on max predicted value, compare index
     predicted = torch.softmax(preds, dim=2).argmax(dim=2, keepdim=True).squeeze()
     true = y.max(dim=1, keepdim=True).indices.squeeze()
     true = true.repeat(predicted.shape[0], 1, 1).view(predicted.shape).squeeze()
-
-#     print("predicted shape", predicted.shape)
-#     print(predicted)
-#     print("true shape is", true.shape)
-#     print(true)
-
-    correct = (predicted == true).float()  # convert into float for division
-    print("correct shape is", correct.shape)
-    print(correct.sum(dim=1))
-    acc = correct.sum(dim=1) / correct.shape[0]
+    
+    correct = (predicted == true).float()  
+    acc = correct.sum(dim=1) / correct.shape[1]
 
     return acc.mean()
 
+def compute_accuracy(model, data):
+    '''
+    Compute multiclass accuracy for the model given a data iterable
+
+    Takes: data iterable object
+    Returns: multiclass accuracy score
+    '''
+
+    model.eval()
+    it = iter(data)
+    total_count = 0. 
+    total_acc = 0. 
+    last_batch_size = BATCH_SIZE
+    with torch.no_grad():
+
+        # Initialize hidden vector
+        hidden = model.initHidden() 
+        
+        for i, batch in enumerate(it):
+                                    
+            # extract narrative and label for batch
+            batch_text = batch.narrative
+            target = batch.label
+
+            # drop last batch if it is too short
+            # happens when number of narratives not divisible by batch size
+            if i > 0 and batch_text.shape[1] != last_batch_size:
+                break
+
+            # zero out gradients for current batch and call forward propagation
+            model.zero_grad()
+            decoded, hiddenn = model(batch_text, hidden)
+
+            if model.rnn_type == "LSTM":
+                hidden = hiddenn[0], hiddenn[1]
+            else:
+                hidden = hiddenn
+
+            # keep track of batch size
+            last_batch_size = batch.batch_size
+            
+            # get average loss for batch 
+            acc = multiclass_accuracy(decoded, target)
+            print("acc is", acc)
+
+            total_acc += acc 
+            total_count += 1
+        
+    final_acc = total_acc / total_count
+    model.train()
+    return final_acc
 '''
 LOADING/SAVING
 '''

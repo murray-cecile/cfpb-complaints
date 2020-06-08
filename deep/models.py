@@ -164,7 +164,6 @@ class RNNModel(nn.Module):
                 
                 # count number of narratives in batch
                 total_count += decoded.shape[0]
-            
 
         loss = total_loss / total_count
         self.train()

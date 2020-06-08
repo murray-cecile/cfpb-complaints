@@ -26,6 +26,8 @@ This subdirectory contains the code to create and run RNN models for the two pre
     - additional evaluation functions
     - utilities for saving and loading model `state_dict()`
 
+- `evaluation.ipynb` is a notebook containing code for computing multiclass accuracy
+
 ### How to run models
 
 Users should only need to modify `deep_main.py` in order to run models. The module can be configured with the following options:
