@@ -92,6 +92,7 @@ MODEL EVALUATION
 
 def multiclass_accuracy(preds, y):
     '''
+    MAY NOT BE WORKING YET
     Compute accuracy for multiclass classification
 
     Takes: 
