@@ -1,6 +1,0 @@
-classifier,mean_test_score,time,params
-LogisticRegression,0.7474903474903475,13.207496881484985,"{'estimator__C': 10, 'estimator__penalty': 'l2'}"
-GaussianNB,0.44015444015444016,0.9270708560943604,{}
-RandomForestClassifier,0.7861003861003862,466.7527983188629,"{'estimator__max_depth': 200, 'estimator__n_estimators': 57}"
-SVC,0.738996138996139,118.30825400352478,"{'estimator__C': 10, 'estimator__kernel': 'linear'}"
-GradientBoostingClassifier,0.7806949806949806,747.4350981712341,"{'estimator__learning_rate': 0.1, 'estimator__max_depth': 10}"

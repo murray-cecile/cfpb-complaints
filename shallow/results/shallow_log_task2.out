@@ -1,0 +1,80 @@
+ ---------- LOADING DATE ---------- 
+
+Distribution of training labels: 
+Credit reporting, credit repair services, or other personal consumer reports    0.332423
+Debt collection                                                                 0.214026
+Mortgage                                                                        0.110200
+Credit card or prepaid card                                                     0.080146
+Credit reporting                                                                0.055556
+Student loan                                                                    0.053734
+Checking or savings account                                                     0.042805
+Bank account or service                                                         0.027322
+Credit card                                                                     0.025501
+Vehicle loan or lease                                                           0.015483
+Money transfer, virtual currency, or money service                              0.015483
+Payday loan, title loan, or personal loan                                       0.013661
+Consumer Loan                                                                   0.010929
+Prepaid card                                                                    0.002732
+Name: product, dtype: float64
+
+
+Training samples: 1098
+Testing samples: 275
+
+ ---------- NAIVE BAYES---------- 
+
+0.6557451224574512
+{'clf__alpha': 0.01, 'tfidf__use_idf': False, 'vect__ngram_range': (1, 1)}
+
+                                                                              precision    recall  f1-score   support
+
+                                                     Bank account or service       0.00      0.00      0.00        10
+                                                 Checking or savings account       0.33      0.20      0.25        10
+                                                               Consumer Loan       0.00      0.00      0.00         5
+                                                                 Credit card       0.00      0.00      0.00        13
+                                                 Credit card or prepaid card       0.40      0.56      0.47        18
+                                                            Credit reporting       0.00      0.00      0.00        13
+Credit reporting, credit repair services, or other personal consumer reports       0.64      0.93      0.76        90
+                                                             Debt collection       0.78      0.86      0.82        57
+                          Money transfer, virtual currency, or money service       0.00      0.00      0.00         3
+                                                             Money transfers       0.00      0.00      0.00         1
+                                                                    Mortgage       0.82      0.91      0.86        34
+                                   Payday loan, title loan, or personal loan       0.00      0.00      0.00         2
+                                                                Prepaid card       0.00      0.00      0.00         2
+                                                                Student loan       0.89      0.62      0.73        13
+                                                       Vehicle loan or lease       0.00      0.00      0.00         4
+
+                                                                    accuracy                           0.67       275
+                                                                   macro avg       0.26      0.27      0.26       275
+                                                                weighted avg       0.55      0.67      0.60       275
+
+
+ ---------- SVM---------- 
+
+0.6630427563304275
+{'clf__alpha': 0.001, 'tfidf__use_idf': True, 'vect__ngram_range': (1, 2)}
+
+                                                                              precision    recall  f1-score   support
+
+                                                     Bank account or service       0.50      0.10      0.17        10
+                                                 Checking or savings account       0.71      0.50      0.59        10
+                                                               Consumer Loan       0.00      0.00      0.00         5
+                                                                 Credit card       0.00      0.00      0.00        13
+                                                 Credit card or prepaid card       0.42      0.56      0.48        18
+                                                            Credit reporting       0.00      0.00      0.00        13
+Credit reporting, credit repair services, or other personal consumer reports       0.68      0.88      0.77        90
+                                                             Debt collection       0.72      0.91      0.81        57
+                          Money transfer, virtual currency, or money service       1.00      0.33      0.50         3
+                                                             Money transfers       0.00      0.00      0.00         1
+                                                                    Mortgage       0.85      0.97      0.90        34
+                                   Payday loan, title loan, or personal loan       0.00      0.00      0.00         2
+                                                                Prepaid card       0.00      0.00      0.00         2
+                                                                Student loan       0.71      0.77      0.74        13
+                                                       Vehicle loan or lease       0.00      0.00      0.00         4
+
+                                                                    accuracy                           0.69       275
+                                                                   macro avg       0.37      0.33      0.33       275
+                                                                weighted avg       0.59      0.69      0.63       275
+
+
+ -------------------- 

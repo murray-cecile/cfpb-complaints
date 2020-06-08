@@ -1,3 +1,9 @@
-Note that in order to get the models to run in a reasonable amount of time, we had to run a smaller set of hyperpamater options, and we had to parallelize this pipeline by running each classifier on a separate EC2 instance. Note that even with this parallelized approach, the process takes over 24 hours to run. 
+Note that in order to get the models to run in a reasonable amount of time, we had to run a smaller set of hyperpamater options, and we had to parallelize this pipeline by running each classifier on a separate EC2 instance. Note that even with this parallelized approach, the process takes several days to run. As a result, the output files reflect the pipeline output on a development dataset (to demonstrate the full pipeline process). 
 
-As a result, the output files `model_evaluation.csv`, `model_evaluation_full.csv`, `shallow_log.out` and `feature_importance.json` reflect the pipeline output on a development dataset (to demonstrate the full pipeline process). The results from the separate EC2 instances on the full dataset are manually collated in `FULL_shallow_log.out` file. 
+
+- `shallow_log_task1.out` logs the pipeline run for the first machine learning task 
+- `model_evaluation_task1.csv` summarizes the best performing specification for each type of classifier 
+- `model_evaluation_full_task1.csv` summarizes all specifications 
+- `feature_importance_task1.json` stores the feature importance for the best performing model for each label class 
+
+- `shallow_log_task2.out` logs the pipeline run for the second machine learning task 
