@@ -1,8 +1,5 @@
-#import other files - not working locally CHECK THESE
-import make_datasets as md #this isn't working locally for me in PyCharm - see if it works on other comp
+import make_datasets as md
 import clustering_util as util
-
-
 from sklearn.decomposition import LatentDirichletAllocation as LDA
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
@@ -12,6 +9,10 @@ import pyLDAvis
 if __name__ == "__main__":
     # get full dataset
     df = md.clean_raw_file(pd.read_csv(md.RAW_FILE))
+
+    #clean up columns
+    new_names = [n.lower().replace(" ", "_").replace("?", "") for n in df.columns]
+    df.columns = new_names
 
     # simplify dataframe
     df2 = df2 = df[['complaint_id', 'consumer_complaint_narrative']].copy()
