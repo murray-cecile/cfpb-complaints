@@ -17,8 +17,9 @@ SEED = 1234
 torch.manual_seed(SEED)
 
 # TO DO: improve this structure
-# DEVELOPING = True
-DEVELOPING = False
+DEVELOPING = True
+# DEVELOPING = False
+WHICH_TASK = "product"
 
 if DEVELOPING:
     # in order: train, validation, test
@@ -38,7 +39,7 @@ else:
     pass
 
 
-def load_and_tokenize_data(path, TEXT, LABEL):
+def load_and_tokenize_data(path, TEXT, LABEL, which_task):
     '''
     turn csv of complaints -> pytorch data object
 
@@ -46,29 +47,50 @@ def load_and_tokenize_data(path, TEXT, LABEL):
     - file path to data csv
     - TEXT field defini sction object
     - LABEL field definition object
+    - string denoting which field is label ("response" or "product")
     Returns: 
     - Tabular dataset type
     '''
 
-    # define which fields we want
-    data_fields = [('date_received', None),
-                   ('product', None),
-                   ('sub-product', None),
-                   ('issue', None),
-                   ('sub-issue', None),
-                   ('narrative', TEXT), # note this is the field name, not colname in csv
-                   ('company_public_response', None),
-                   ('company', None),
-                   ('state', None),
-                   ('zip_code', None),
-                   ('tags', None),
-                   ('consumer_consent_provided', None),
-                   ('submitted_via', None),
-                   ('date_sent_to_company', None),
-                   ('label', LABEL), # ditto here
-                   ('timely_response', None),
-                   ('consumer_disputed', None),
-                   ('complaint_id', None)]
+    # define fields
+    if which_task == "response":
+        data_fields = [('date_received', None),
+                    ('product', None),
+                    ('sub-product', None),
+                    ('issue', None),
+                    ('sub-issue', None),
+                    ('narrative', TEXT), # note this is the field name, not colname in csv
+                    ('company_public_response', None),
+                    ('company', None),
+                    ('state', None),
+                    ('zip_code', None),
+                    ('tags', None),
+                    ('consumer_consent_provided', None),
+                    ('submitted_via', None),
+                    ('date_sent_to_company', None),
+                    ('label', LABEL), # ditto here
+                    ('timely_response', None),
+                    ('consumer_disputed', None),
+                    ('complaint_id', None)]
+    else:
+        data_fields = [('date_received', None),
+                    ('label', LABEL), # ditto here
+                    ('sub-product', None),
+                    ('issue', None),
+                    ('sub-issue', None),
+                    ('narrative', TEXT), # note this is the field name, not colname in csv
+                    ('company_public_response', None),
+                    ('company', None),
+                    ('state', None),
+                    ('zip_code', None),
+                    ('tags', None),
+                    ('consumer_consent_provided', None),
+                    ('submitted_via', None),
+                    ('date_sent_to_company', None),
+                    ('company_response_to_consumer', None), 
+                    ('timely_response', None),
+                    ('consumer_disputed', None),
+                    ('complaint_id', None)]
 
     return data.TabularDataset(path=path,
                                format='csv',
@@ -76,7 +98,7 @@ def load_and_tokenize_data(path, TEXT, LABEL):
                                fields=data_fields)
 
 
-def preprocess(train_file, val_file, test_file, max_vocab_size=MAX_VOCAB_SIZE):
+def preprocess(which_task, train_file, val_file, test_file, max_vocab_size=MAX_VOCAB_SIZE):
     '''
     Load data and preprocess:
     - apply tokenization
@@ -84,6 +106,7 @@ def preprocess(train_file, val_file, test_file, max_vocab_size=MAX_VOCAB_SIZE):
     - build embeddings
 
     Takes:
+    - string denoting which field is label ("response" or "product")
     - filename of training data csv
     - filename of validation csv
     - filename of testing csv
@@ -92,16 +115,25 @@ def preprocess(train_file, val_file, test_file, max_vocab_size=MAX_VOCAB_SIZE):
     - train data, validation data, test data object
     '''
 
-    # define preprocessing pipeline object
-    OneHotEncoder = data.Pipeline(convert_token=util.one_hot_encode_label)
+    if which_task not in ["response", "product"]:
+        print("preprocessing error: which field is the label?")
+        raise ValueError
 
-    # define text and label field objects with preprocessing
+    # define text field objects with tokenization
     TEXT = data.Field(sequential=True, tokenize=util.tokenize, lower=True)
-    LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=OneHotEncoder)
 
-    train_data = load_and_tokenize_data(train_file, TEXT, LABEL)
-    valid_data = load_and_tokenize_data(val_file, TEXT, LABEL)
-    test_data = load_and_tokenize_data(test_file, TEXT, LABEL)
+    # define label field with one hot encoded labels
+    if which_task == "response":
+        OneHotEncoder = data.Pipeline(convert_token=util.one_hot_encode_response)
+        LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=OneHotEncoder)
+    else:
+        OneHotEncoder = data.Pipeline(convert_token=util.one_hot_encode_product)
+        LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=OneHotEncoder)
+
+
+    train_data = load_and_tokenize_data(train_file, TEXT, LABEL, which_task)
+    valid_data = load_and_tokenize_data(val_file, TEXT, LABEL, which_task)
+    test_data = load_and_tokenize_data(test_file, TEXT, LABEL, which_task)
 
     # create embeddings from training data
     TEXT.build_vocab(train_data, max_size=max_vocab_size)
@@ -213,11 +245,12 @@ def optimize_params(parameters, train_iter, val_iter):
     return best_model, time.time() - start_time
 
 
-def run_model(model_params, train_iter, valid_iter, test_iter, save=False, model_file=''):
+def run_model(which_task, model_params, train_iter, valid_iter, test_iter, save=False, model_file=''):
     '''
     Trains single model w/ given parameters and evaluates on test
 
     Takes:
+    - string denoting which field is label ("response" or "product")
     - dict of model parameters
     - train iterable of batches
     - validation iterable of batches
@@ -246,7 +279,7 @@ if __name__ == "__main__":
     GET DATA PREPARED
     (don't want to run this more than 1x even with multiple models)
     '''
-    train_data, valid_data, test_data = preprocess(*files)
+    train_data, valid_data, test_data = preprocess(WHICH_TASK, *files)
 
     train_iter, valid_iter, test_iter = data.BucketIterator.splits( \
     (train_data, valid_data, test_data), \
@@ -267,7 +300,7 @@ if __name__ == "__main__":
     GRAD_CLIP = 1
 
 
-    parameters = {
+    company_response_parameters = {
         "model_type": "LSTM", \
         "vocab_size": INPUT_DIM, \
         "embedding_size": 40, \
@@ -275,9 +308,20 @@ if __name__ == "__main__":
         "num_layers": 2, \
         "n_categories": 5, \
         "dropout": 0.5
-    #     "tie_weights": False # didn't implement this but we coulds
+    #     "tie_weights": False # didn't implement this but we could
     }
 
+    product_parameters = {
+        "model_type": "LSTM", \
+        "vocab_size": INPUT_DIM, \
+        "embedding_size": 40, \
+        "hidden_size": 50, \
+        "num_layers": 2, \
+        "n_categories": 18, \
+        "dropout": 0.5
+    #     "tie_weights": False # didn't implement this but we could
+    }
 
     # this can get put into a loop, if it doesn't run insanely slowly
-    best_model, train_time, test_loss = run_model(parameters, *iters, save=False)
+    # best_model, train_time, test_loss = run_model(WHICH_TASK, company_response_parameters, *iters, save=False)
+    best_model, train_time, test_loss = run_model(WHICH_TASK, product_parameters, *iters, save=False)
