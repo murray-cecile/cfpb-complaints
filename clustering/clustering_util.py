@@ -2,11 +2,6 @@ import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 import re
-from sklearn.decomposition import LatentDirichletAllocation as LDA
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from pyLDAvis import sklearn as sklearn_lda
-import pyLDAvis
 
 
 NUMBER_TOPICS = 10
@@ -15,7 +10,8 @@ NUMBER_WORDS = 5
 
 def clean_data(df):
     '''
-    Remove punctuation, convert to lowercase, remove stop words, remove redacted/x'ed out terms
+    Remove punctuation, convert to lowercase, remove stop words, 
+    remove redacted/x'ed out terms
 
     Takes: df
     Returns: cleaned df
@@ -25,7 +21,7 @@ def clean_data(df):
         .map(lambda x: re.sub(r'[,/)(\.!?]', '', x)) \
         .map(lambda x: x.lower()) \
         .apply(lambda x: ' '.join([i for i in x.split() if i not in stop])) \
-        .str.replace(r"xx+\s", "") \
+        .str.replace(r'xx+\s', '') \
         .apply(standardize_terms) \
         .apply(lambda x: ' '.join([i for i in x.split() if i not in stop]))
 

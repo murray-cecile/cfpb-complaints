@@ -1,8 +1,5 @@
 import make_datasets as md
 import clustering_util as util
-import nltk
-from nltk.corpus import stopwords
-import re
 from sklearn.decomposition import LatentDirichletAllocation as LDA
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
@@ -19,7 +16,7 @@ if __name__ == "__main__":
     df.columns = new_names
 
     # simplify dataframe
-    df2 = df2 = df[['complaint_id', 'consumer_complaint_narrative']].copy()
+    df2 = df[['complaint_id', 'consumer_complaint_narrative']].copy()
 
     # clean text data
     clean_df = util.clean_data(df2)
