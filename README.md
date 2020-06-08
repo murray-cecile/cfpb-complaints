@@ -8,7 +8,7 @@ This repository contains our final project for CAPP 30255 - Advanced Machine Lea
 Our repository is organized as follows: 
 
 - The `explore` directory contains exploratory data analysis 
-- The `unsupervised-clustering` directory contains the clustering and topic modeling 
+- The `clustering` directory contains the clustering and topic modeling 
 - The `shallow` directory contains the shallow learning classification pipeline 
 - The `deep` directory contains the deep learning classification pipeline 
 
