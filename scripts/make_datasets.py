@@ -3,6 +3,7 @@ CREATE DATASETS FOR DEEP LEARNING MODELS
 '''
 
 import pandas as pd 
+from imblearn.under_sampling import RandomUnderSampler
 
 
 SEED = 2020
