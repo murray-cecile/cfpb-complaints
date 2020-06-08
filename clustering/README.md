@@ -9,7 +9,7 @@ This subdirectory contains the code to create and run an LDA model for topic mod
     - creates BoW and vectorizes the text data
     - defines a model object instance for LDA
     - runs the LDA model
-    - evaluates model by viewing the top topics per cluster and visualizations of the cluser
+    - evaluates model by viewing the top topics per cluster and visualizations of the cluster
 
 - `clustering_util.py` contains a suite of helper functions:
     - data cleaning 
