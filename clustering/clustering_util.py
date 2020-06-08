@@ -3,19 +3,17 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 import re
 
-# GLOBALS
 NUMBER_TOPICS = 10
 NUMBER_WORDS = 5
 
 
 def clean_data(df):
     '''
-    # Remove punctuation, convert to lowercase, remove stop words, remove redacted/x'ed out terms
+    Remove punctuation, convert to lowercase, remove stop words, remove redacted/x'ed out terms
 
     Takes: df
     Returns: cleaned df
     '''
-    # Remove punctuation, convert to lowercase, remove stop words, remove redacted/x'ed out terms
     stop = stopwords.words('english')
     df['consumer_complaint_narrative'] = df['consumer_complaint_narrative'] \
         .map(lambda x: re.sub(r'[,/)(\.!?]', '', x)) \
@@ -29,12 +27,11 @@ def clean_data(df):
 
 def create_term_dic():
     '''
-    # Create term dic as combination of two popular term dicts
+    Create term dic as combination of two popular term dicts
 
     Takes: None
     Returns: term dictionary
     '''
-    # Remove punctuation, convert to lowercase, remove stop words, remove redacted/x'ed out terms
     dico = {}
     dico2 = open('norm_dict/emnlp_dict.txt', 'rb')
     for word in dico2:
@@ -54,7 +51,7 @@ def create_term_dic():
 
 def standardize_terms(words):
     '''
-    # Standardize terms
+    Standardize terms
 
     Takes: term dictionary and words to standardize
     Returns: list of words
@@ -69,7 +66,7 @@ def standardize_terms(words):
 
 def print_lda_topics(model, count_vectorizer, n_top_words):
     '''
-    # Helper function to help show top words per cluster
+    Helper function to help show top words per cluster
 
     Takes: model, count_vectorizer, top_word_count
     Returns: prints top words
