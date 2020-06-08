@@ -22,7 +22,7 @@ def clean_data(df):
         .map(lambda x: x.lower()) \
         .apply(lambda x: ' '.join([i for i in x.split() if i not in stop])) \
         .str.replace(r'xx+\s', '') \
-        .apply(standardize_terms) \
+        #.apply(standardize_terms) \
         .apply(lambda x: ' '.join([i for i in x.split() if i not in stop]))
 
     return df
