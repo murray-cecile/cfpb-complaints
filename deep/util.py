@@ -87,12 +87,6 @@ def one_hot_encode_product(x):
 
 
 '''
-MODEL TRAINING
-'''
-
-# should optimize_params() go here?
-
-'''
 MODEL EVALUATION
 '''
 

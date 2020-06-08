@@ -16,10 +16,10 @@ from models import *
 SEED = 1234
 torch.manual_seed(SEED)
 
-# TO DO: improve this structure
+# CONFIGURE THESE PARAMETERS
 DEVELOPING = True
 # DEVELOPING = False
-WHICH_TASK = "product"
+WHICH_TASK = "product" # also can be "response"
 
 if DEVELOPING:
     # in order: train, validation, test
@@ -37,6 +37,12 @@ else:
     MAX_VOCAB_SIZE = 25000
     # TO DO: make full files
     pass
+
+USE_CUDA = False
+INPUT_DIM = MAX_VOCAB_SIZE + 2 # this is janky
+NUM_EPOCHS = 1
+GRAD_CLIP = 1
+
 
 
 def load_and_tokenize_data(path, TEXT, LABEL, which_task):
@@ -293,35 +299,26 @@ if __name__ == "__main__":
     DO MODEL RUNS
     '''
 
-    # TO DO: do something better with these guys
-    USE_CUDA = False
-    INPUT_DIM = MAX_VOCAB_SIZE + 2 # this is janky
-    NUM_EPOCHS = 1
-    GRAD_CLIP = 1
 
+    if WHICH_TASK == "response":
+        company_response_parameters = {
+            "model_type": "LSTM", \
+            "vocab_size": INPUT_DIM, \
+            "embedding_size": 40, \
+            "hidden_size": 50, \
+            "num_layers": 2, \
+            "n_categories": 5, \
+            "dropout": 0.5
+        }
+    else if WHICH_TASK == "product":
+        parameters = {
+            "model_type": "LSTM", \
+            "vocab_size": INPUT_DIM, \
+            "embedding_size": 40, \
+            "hidden_size": 50, \
+            "num_layers": 2, \
+            "n_categories": 18, \
+            "dropout": 0.5
+        }
 
-    company_response_parameters = {
-        "model_type": "LSTM", \
-        "vocab_size": INPUT_DIM, \
-        "embedding_size": 40, \
-        "hidden_size": 50, \
-        "num_layers": 2, \
-        "n_categories": 5, \
-        "dropout": 0.5
-    #     "tie_weights": False # didn't implement this but we could
-    }
-
-    product_parameters = {
-        "model_type": "LSTM", \
-        "vocab_size": INPUT_DIM, \
-        "embedding_size": 40, \
-        "hidden_size": 50, \
-        "num_layers": 2, \
-        "n_categories": 18, \
-        "dropout": 0.5
-    #     "tie_weights": False # didn't implement this but we could
-    }
-
-    # this can get put into a loop, if it doesn't run insanely slowly
-    # best_model, train_time, test_loss = run_model(WHICH_TASK, company_response_parameters, *iters, save=False)
-    best_model, train_time, test_loss = run_model(WHICH_TASK, product_parameters, *iters, save=False)
+    best_model, train_time, test_loss = run_model(WHICH_TASK, parameters, *iters, save=False)
