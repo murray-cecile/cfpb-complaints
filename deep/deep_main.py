@@ -19,20 +19,20 @@ torch.manual_seed(SEED)
 # CONFIGURE THESE PARAMETERS
 DEVELOPING = True
 # DEVELOPING = False
-WHICH_TASK = "product" # also can be "response"
+WHICH_TASK = "response" # also can be "response"
 
 if DEVELOPING:
     # in order: train, validation, test
-    files = ["data/complaints_3k.csv", \
-                "data/complaints_500.csv", \
-                "data/complaints_1k.csv"]
+    files = ["../data/complaints_3k.csv", \
+                "../data/complaints_500.csv", \
+                "../data/complaints_1k.csv"]
     BATCH_SIZE = 7
     MAX_VOCAB_SIZE = 5000
 else:
     # in order: train, validation, test
-    files = ["data/full_training_set.csv", \
-                "data/full_validation_set.csv", \
-                "data/full_testing_set.csv"]    
+    files = ["../data/full_training_set.csv", \
+                "../data/full_validation_set.csv", \
+                "../data/full_testing_set.csv"]    
     BATCH_SIZE = 64
     MAX_VOCAB_SIZE = 25000
     # TO DO: make full files
@@ -278,6 +278,7 @@ def run_model(which_task, model_params, train_iter, valid_iter, test_iter, save=
 
     return best_model, train_time, test_loss
 
+
 if __name__ == "__main__":
     
 
@@ -310,7 +311,7 @@ if __name__ == "__main__":
             "n_categories": 5, \
             "dropout": 0.5
         }
-    else if WHICH_TASK == "product":
+    elif WHICH_TASK == "product":
         parameters = {
             "model_type": "LSTM", \
             "vocab_size": INPUT_DIM, \
@@ -321,4 +322,4 @@ if __name__ == "__main__":
             "dropout": 0.5
         }
 
-    best_model, train_time, test_loss = run_model(WHICH_TASK, parameters, *iters, save=False)
+    best_model, train_time, test_loss = run_model(WHICH_TASK, company_response_parameters, *iters, save=True, model_file='trained_model.pt')
