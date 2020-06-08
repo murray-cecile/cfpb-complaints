@@ -1,0 +1,86 @@
+ ---------- LOADING DATA ---------- 
+
+Date range: 2016-01-01 00:00:00 to 2019-12-31 00:00:00
+Number of complaints: 436391
+
+
+Distribution of company response: 
+Closed with explanation            0.813722
+Closed with non-monetary relief    0.123408
+Closed with monetary relief        0.051419
+Untimely response                  0.006302
+Closed                             0.005149
+Name: company_response_to_consumer, dtype: float64
+
+
+Number of unique values in each column: 
+date_received                     1460
+product                             18
+sub-product                         75
+issue                              161
+sub-issue                          216
+consumer_complaint_narrative    409658
+company_public_response             10
+company                           4218
+state                               63
+zip_code                         10228
+tags                                 3
+consumer_consent_provided            1
+submitted_via                        1
+date_sent_to_company              1485
+company_response_to_consumer         5
+timely_response                      2
+consumer_disputed                    2
+complaint_id                    436391
+week                               209
+dtype: int64
+
+ ---------- RESAMPLING TRAINING DATA ---------- 
+
+Distribution of training labels: 
+Closed with monetary relief        0.2
+Closed with explanation            0.2
+Closed with non-monetary relief    0.2
+Closed                             0.2
+Untimely response                  0.2
+Name: company_response_to_consumer, dtype: float64
+
+
+Training samples: 283975
+Testing samples: 87279
+Time elapsed: 1505.35448884964
+
+ ---------- TRAINING MODELS ---------- 
+
+Classifier: LogisticRegression
+Best score: 0.7438471696452152
+Best parameters: {'estimator__C': 10, 'estimator__penalty': 'l2'}
+Time elapsed: 3093.5805757045746
+
+
+Classifier: GaussianNB
+Best score: 0.48713090941103976
+Best parameters: {}
+Time elapsed: 91.93816018104553
+
+
+Classifier: RandomForestClassifier
+Best score: 0.7877841359274584
+Best parameters: {'estimator__max_depth': 50, 'estimator__n_estimators': 150}
+Time elapsed: 19032.522826433182
+
+
+Classifier: SVC
+Best score:
+Best parameters:
+Time elapsed: [Over 24 hours]
+
+
+Classifier: GradientBoostingClassifier
+Best score:
+Best parameters:
+Time elapsed: [Over 24 hours]
+
+
+
+

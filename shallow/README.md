@@ -16,7 +16,7 @@ Note that the pipelines (even with a small grid of hyperparamters) take several 
 	- Uses k-fold cross validation to iterate over various classifiers and hyperparameters 
 	- Evaluates the best performing classifier 
 
-- `shallow_main_task2.py` runs the full machine learning pipeline for task 2 (predicting product and issue)
+- `shallow_main_task2.py` runs the full machine learning pipeline for task 2 (predicting product and issue): 
 	- Loads and pre-processes the raw data 
 	- Engineers the relevant text features 
 	- Splits into training and testing sets 
@@ -25,7 +25,6 @@ Note that the pipelines (even with a small grid of hyperparamters) take several 
 
 - `shallow_util.py` contains the set of helper functions used in `shallow_main_task1.py` and `shallow_main_task2.py`  
 
-- `processed_data` contains processed and resampled modeling datasets in CSV format (the feature engineering and resampling take awhile, so I run this once and stored these files locally) 
 
 - `results` contains the output of running the full pipelines 
 	- `shallow_log_task1.out` logs the pipeline run for the first machine learning task 
