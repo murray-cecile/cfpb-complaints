@@ -2,6 +2,12 @@ import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 import re
+from sklearn.decomposition import LatentDirichletAllocation as LDA
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from pyLDAvis import sklearn as sklearn_lda
+import pyLDAvis
+
 
 NUMBER_TOPICS = 10
 NUMBER_WORDS = 5
@@ -33,13 +39,13 @@ def create_term_dic():
     Returns: term dictionary
     '''
     dico = {}
-    dico2 = open('norm_dict/emnlp_dict.txt', 'rb')
+    dico2 = open('dict1.txt', 'rb')
     for word in dico2:
         word = word.decode('utf8')
         word = word.split()
         dico[word[0]] = word[1]
     dico2.close()
-    dico3 = open('norm_dict/typo-corpus-r1.txt', 'rb')
+    dico3 = open('dict2.txt', 'rb')
     for word in dico3:
         word = word.decode('utf8')
         word = word.split()
