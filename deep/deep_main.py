@@ -19,7 +19,7 @@ torch.manual_seed(SEED)
 # CONFIGURE THESE PARAMETERS
 DEVELOPING = True
 # DEVELOPING = False
-WHICH_TASK = "response" # also can be "response"
+WHICH_TASK = "product" # also can be "response"
 
 if DEVELOPING:
     # in order: train, validation, test
@@ -35,11 +35,9 @@ else:
                 "../data/full_testing_set.csv"]    
     BATCH_SIZE = 64
     MAX_VOCAB_SIZE = 25000
-    # TO DO: make full files
-    pass
 
 USE_CUDA = False
-INPUT_DIM = MAX_VOCAB_SIZE + 2 # this is janky
+INPUT_DIM = MAX_VOCAB_SIZE + 2 # words + pad + unknown
 NUM_EPOCHS = 1
 GRAD_CLIP = 1
 
@@ -136,7 +134,7 @@ def preprocess(which_task, train_file, val_file, test_file, max_vocab_size=MAX_V
         OneHotEncoder = data.Pipeline(convert_token=util.one_hot_encode_product)
         LABEL = data.LabelField(sequential=False, use_vocab=False, preprocessing=OneHotEncoder)
 
-
+    # create dataset objects
     train_data = load_and_tokenize_data(train_file, TEXT, LABEL, which_task)
     valid_data = load_and_tokenize_data(val_file, TEXT, LABEL, which_task)
     test_data = load_and_tokenize_data(test_file, TEXT, LABEL, which_task)
@@ -178,11 +176,11 @@ def optimize_params(parameters, train_iter, val_iter):
     if USE_CUDA:
         model = model.cuda()
 
-    # TO DO: maybe don't want to set these here
     learning_rate = 0.01 # 0.001 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    last_batch_size = BATCH_SIZE
 
+    # initialize variables for loop
+    last_batch_size = BATCH_SIZE 
     val_losses = []
     best_model = None
     start_time = time.time()
@@ -261,7 +259,7 @@ def run_model(which_task, model_params, train_iter, valid_iter, test_iter, save=
     - train iterable of batches
     - validation iterable of batches
     - test iterable of batches
-    - filename for model state dict
+    - filename for model state dict (in models subdirectory)
     - boolean to turn off saving model state dict
     '''
 
@@ -274,7 +272,12 @@ def run_model(which_task, model_params, train_iter, valid_iter, test_iter, save=
     # save state
     if save:
         optimized_dict = best_model.state_dict()
-        util.save_model(optimized_dict, model_file)
+    
+        try:
+            util.save_model(optimized_dict, model_file)
+        except Exception as e:
+            print(e)
+            return best_model, train_data, test_loss   
 
     return best_model, train_time, test_loss
 
