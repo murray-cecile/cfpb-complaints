@@ -3,6 +3,7 @@ import pandas as pd
 import json 
 import time
 import os
+import re
 
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
@@ -12,6 +13,13 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import f1_score, make_scorer, classification_report 
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import SGDClassifier
+
+import nltk
+from nltk.corpus import stopwords
 
 from shallow_constants import * 
 
@@ -394,6 +402,54 @@ def feature_importance(clf, X_train, verbose=True):
         json.dump(feat_imp_dict, fp)
         
     return feat_imp_dict
+
+
+def load_data_task2(): 
+    '''
+    Loads and pre-processes data from the CFPB complaints database 
+    for the second task (predicting product/issue from the narrative description). 
+    Splits into training and testing datasets 
+
+    Returns: X_train, X_test, y_train, y_test 
+    '''
+
+    # Load dataset
+    df = pd.read_csv(COMPLAINTS_CSV)
+    
+    # Clean column names 
+    new_names = [n.lower().replace(" ", "_").replace("?", "") for n in df.columns]
+    df.columns = new_names
+    
+    # Drop rows missing relevant variables 
+    df.dropna(subset=[NARRATIVE_COL, LABEL_COL], inplace=True)
+    
+    # Limit to date range 
+    df = df[(df.date_received >= START_DATE) & (df.date_received < END_DATE)]
+    
+    # Preprocess text field 
+    stop = stopwords.words('english')
+    df[NARRATIVE_COL] = (
+        df[NARRATIVE_COL] 
+        .map(lambda x: re.sub(r'[,/)(\.!?]', '', x)) 
+        .map(lambda x: x.lower()) 
+        .apply(lambda x: ' '.join([i for i in x.split() if i not in stop]))
+        .str.replace(r"xx+\s",""))
+    
+    # Split into training and testing sets 
+    X = df.loc[:, NARRATIVE_COL]
+    y = df.loc[:, LABEL_COL]
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+    print('Distribution of training labels: \n{}'.format(y_train.value_counts() / y_train.shape[0]))
+    print('\n')
+    print('Training samples:', X_train.shape[0])
+    print('Testing samples:', X_test.shape[0])
+
+    return X_train, X_test, y_train, y_test
+
+
+
 
 
 

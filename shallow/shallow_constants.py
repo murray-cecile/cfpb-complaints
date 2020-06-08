@@ -11,23 +11,28 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
 
 # Input files 
-COMPLAINTS_CSV = 'http://files.consumerfinance.gov/ccdb/complaints.csv.zip'
-# COMPLAINTS_CSV = 'data/complaints.csv'
+# COMPLAINTS_CSV = 'http://files.consumerfinance.gov/ccdb/complaints.csv.zip'
+COMPLAINTS_CSV = '../data/complaints.csv'
 
-# Output files 
-FEATURE_IMPORTANCE_OUT = 'results/feature_importance.json'
-MODEL_EVALUATION_OUT = 'results/model_evaluation.csv'
-MODEL_EVALUATION_OUT_FULL = 'results/model_evaluation_full.csv'
-PROCESSED_DATA_DIR = 'processed_data'
+# Date range for complaints 
+START_DATE = '2016-01-01'
+END_DATE = '2020-01-01'
 
 # Column names 
 RESPONSE_COL = 'company_response_to_consumer'
 NARRATIVE_COL = 'consumer_complaint_narrative'
 DATE_COL = 'date_received'
 
-# Date range for complaints 
-START_DATE = '2016-01-01'
-END_DATE = '2020-01-01'
+# k in k-fold cross validation 
+K = 5
+
+# ----------  TASK 1 SETUP ---------- # 
+
+# Output files 
+FEATURE_IMPORTANCE_OUT = 'results/feature_importance_task1.json'
+MODEL_EVALUATION_OUT = 'results/model_evaluation_task1.csv'
+MODEL_EVALUATION_OUT_FULL = 'results/model_evaluation_full_task1.csv'
+PROCESSED_DATA_DIR = 'processed_data'
 
 # Categorical features, maximum number of values to one-hot encode 
 CAT_COLUMNS = [
@@ -50,14 +55,11 @@ CONTINUOUS_COLUMNS = [
 # Fraction of the majority class to sample 
 FRAC_MAJORITY = 0.2 
 
-# k in k-fold cross validation 
-K = 5
-
 # Cross validation evaluation metric 
 CV_METRIC = f1_score
 CV_AVERAGE = 'micro'
 
-# Models 
+# Models and parameter grids 
 MODELS = {
     'LR':  OneVsRestClassifier(LogisticRegression(max_iter=1000)), 
     'NB':  OneVsRestClassifier(GaussianNB()), 
@@ -77,5 +79,27 @@ PARAMETERS = {
     'GBT': {'estimator__learning_rate': [0.1, 1.0, 0.5], 
             'estimator__max_depth': [int(x) for x in np.linspace(start=10, stop=200, num=5)]}
 }
+
+# ----------  TASK 2 SETUP ---------- # 
+
+# Naive Bayes parameter grid 
+PARAMS_NB = {
+    'vect__ngram_range': [(1, 1), (1, 2)], 
+    'tfidf__use_idf': (True, False), 
+    'clf__alpha': (1e-2, 1e-3)
+}
+
+# SVM parameter grid 
+PARAMS_SVM = {
+    'vect__ngram_range': [(1, 1), (1, 2)], 
+    'tfidf__use_idf': (True, False),
+    'clf__alpha': (1e-2, 1e-3)
+}
+
+# Label column (product or issue)
+LABEL_COL = 'product' 
+
+
+
 
 
