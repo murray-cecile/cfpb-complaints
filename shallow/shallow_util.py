@@ -374,7 +374,7 @@ def feature_importance(clf, X_train, verbose=True):
     # Manage feature importance for SVM 
     if clf.estimator.__class__.__name__ == 'SVC': 
         print('Feature importance not available for classifier')
-    return feat_imp_dict
+        return feat_imp_dict
 
     # Loop over label classes 
     for i, label in enumerate(clf.classes_):

@@ -10,7 +10,7 @@ from sklearn.svm import SVC
 
 # Input files 
 # Also accessible from http://files.consumerfinance.gov/ccdb/complaints.csv.zip 
-COMPLAINTS_CSV = '../data/complaints.csv'
+COMPLAINTS_CSV = 'http://files.consumerfinance.gov/ccdb/complaints.csv.zip'
 
 # Output files 
 FEATURE_IMPORTANCE_OUT = 'results/feature_importance.json'
@@ -68,7 +68,7 @@ PARAMETERS = {
     'RF':  {'estimator__n_estimators': [int(x) for x in np.linspace(start=10, stop=200, num=5)], 
            'estimator__max_depth': [int(x) for x in np.linspace(start=10, stop=200, num=5)]}, 
     'SVM': {'estimator__C': [0.1, 1.0, 10], 
-            'estimator__kernel': ['linear', 'rbf']} 
+            'estimator__kernel': ['linear']} 
 }
 
 
